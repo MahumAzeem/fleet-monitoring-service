@@ -1,0 +1,14 @@
+## Trade-offs Made
+
+- Used in-memory map instead of database 
+
+
+## How I'd Extend This
+
+- Repository pattern for swappable storage
+- Separate API layer for better testing
+- Metrics/observability middleware
+
+
+Note on long-term stats:
+For a prodution system, I would implement a daily job that calculates device stats and store them in a persistent store. Then the mapped timestamps can be maintained in a rolling window to keep memoery usage bounded. This way older history is aggregated and the system can run indefinitely without growing unbounded.

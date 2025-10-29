@@ -11,9 +11,7 @@ import (
 
 func main() {
 
-	registry := &devices.Registry{
-		Devices: make(map[string]*devices.DeviceStats),
-	}
+	registry := devices.NewRegistry()
 	log.Println("Loading devices from CSV...")
 
 	if err := devices.LoadDevicesCSV("devices.csv", registry); err != nil {

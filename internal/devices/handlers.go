@@ -74,31 +74,11 @@ func GetStatsHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 		return
 	}
 
-	ds.mu.RLock()
-	defer ds.mu.RUnlock()
-
-	if ds.FirstHeartbeat.IsZero() || ds.LastHeartbeat.IsZero() {
-		WriteJSON(w, StatsResponse{
-			Uptime:        0,
-			AvgUploadTime: "0s",
-		}, http.StatusOK)
-		return
+	resp := StatsResponse{
+		Uptime:        ds.CalculateUptime(),
+		AvgUploadTime: ds.CalculateAvgUploadTime(),
 	}
-
-	// Assumption: heartbeats dont arrive out of order
-	totalMinutes := ds.LastHeartbeat.Sub(ds.FirstHeartbeat).Minutes()
-	uptime := float64(len(ds.HeartbeatMinutes)) / totalMinutes * 100
-
-	avgUpload := "0s"
-	if ds.UploadCount > 0 {
-		avg := time.Duration(ds.UploadSum / ds.UploadCount)
-		avgUpload = avg.String()
-	}
-
-	WriteJSON(w, StatsResponse{
-		Uptime:        uptime,
-		AvgUploadTime: avgUpload,
-	}, http.StatusOK)
+	WriteJSON(w, resp, http.StatusOK)
 }
 
 func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

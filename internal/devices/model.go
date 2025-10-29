@@ -1,17 +1,13 @@
 package devices
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
 
-type Device struct {
-	ID string `json:"id"`
-}
-
-type Heartbeat struct {
-	SentAt   time.Time `json:"sent_at"`
-	DeviceID string    `json:"device_id"`
+type ErrorResponse struct {
+	Msg string `json:"msg"`
 }
 
 type StatsRequest struct {
@@ -40,25 +36,29 @@ type Registry struct {
 	Devices map[string]*DeviceStats
 }
 
-func (r *Registry) AddHeartbeat(deviceID string, sentAt time.Time) {
+func (r *Registry) AddHeartbeat(deviceID string, sentAt time.Time) error {
 	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	stats, exists := r.Devices[deviceID]
+	r.mu.Unlock()
+
 	if !exists {
-		r.Devices[deviceID] = &DeviceStats{
-			HeartbeatMinutes: make(map[int64]struct{}),
-		}
+		return fmt.Errorf("Device not found")
 	}
 
 	stats.mu.Lock()
 	defer stats.mu.Unlock()
 
-	stats.LastHeartbeat = sentAt
+	// Assumption: heartbeats dont arrive out of order
 	if stats.FirstHeartbeat.IsZero() {
 		stats.FirstHeartbeat = sentAt
 	}
-	stats.HeartbeatMinutes[sentAt.Unix()/60] = struct{}{}
+	if stats.LastHeartbeat.IsZero() || sentAt.After(stats.LastHeartbeat) {
+		stats.LastHeartbeat = sentAt
+	}
+
+	minute := sentAt.Unix() / 60
+	stats.HeartbeatMinutes[minute] = struct{}{}
+	return nil
 }
 
 func (r *Registry) GetStats(deviceID string) (*DeviceStats, bool) {

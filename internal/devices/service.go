@@ -3,55 +3,11 @@ package devices
 import (
 	"encoding/csv"
 	"errors"
-	"fmt"
 	"io"
+	"log"
 	"os"
+	"strings"
 )
-
-// func LoadDevicesCSV(path string, registry *Registry) error {
-// 	f, err := os.Open(path)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to open CSV: %w", err)
-// 	}
-// 	defer f.Close()
-
-// 	reader := csv.NewReader(f)
-// 	reader.FieldsPerRecord = -1 // allow variable columns
-
-// 	first := true
-// 	count := 0
-
-// 	for {
-// 		record, err := reader.Read()
-// 		if err == io.EOF {
-// 			break
-// 		}
-// 		if err != nil {
-// 			return fmt.Errorf("error reading CSV: %w", err)
-// 		}
-// 		if len(record) == 0 {
-// 			continue
-// 		}
-
-// 		deviceID := strings.TrimSpace(strings.TrimPrefix(record[0], "\uFEFF")) // handle BOM + spaces
-// 		if deviceID == "" {
-// 			continue
-// 		}
-
-// 		// skip header automatically
-// 		if first && strings.EqualFold(deviceID, "device_id") {
-// 			first = false
-// 			continue
-// 		}
-// 		first = false
-
-// 		registry.AddDevice(deviceID)
-// 		count++
-// 	}
-
-// 	fmt.Printf("Loaded %d devices from %s\n", count, path)
-// 	return nil
-// }
 
 func LoadDevicesCSV(path string, registry *Registry) error {
 	f, err := os.Open(path)
@@ -87,12 +43,12 @@ func LoadDevicesCSV(path string, registry *Registry) error {
 			continue
 		}
 
-		deviceID := (record[0]) // handle BOM + spaces
-		fmt.Println("DeviceID:", deviceID)
+		deviceID := strings.TrimSpace(record[0])
 		if deviceID == "" {
 			continue
 		}
 
+		log.Printf("Registering device ID: %s", deviceID)
 		registry.AddDevice(deviceID)
 	}
 

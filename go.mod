@@ -1,4 +1,4 @@
-module safelyyou-fleet
+module github.com/MahumAzeem/fleet-monitoring-service
 
 go 1.25.3
 

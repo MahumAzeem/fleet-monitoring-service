@@ -6,7 +6,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
-	"safelyyou-fleet/internal/devices"
+	"github.com/MahumAzeem/fleet-monitoring-service/internal/devices"
 )
 
 func main() {
